@@ -1,0 +1,32 @@
+﻿function randomChallenge(len=32){const a=new Uint8Array(len);crypto.getRandomValues(a);return a}
+function bufToB64(buf){const bytes=new Uint8Array(buf);let s="";bytes.forEach(b=>s+=String.fromCharCode(b));return btoa(s)}
+function b64ToBuf(b64){const s=atob(b64);const bytes=new Uint8Array(s.length);for(let i=0;i<s.length;i++)bytes[i]=s.charCodeAt(i);return bytes.buffer}
+
+async function registerPasskey(username){
+  const publicKey={
+    challenge: randomChallenge(),
+    rp:{name:"Família Finance PRO"},
+    user:{id:new TextEncoder().encode(username),name:username,displayName:username},
+    pubKeyCredParams:[{type:"public-key",alg:-7}],
+    authenticatorSelection:{authenticatorAttachment:"platform",userVerification:"required"},
+    timeout:60000,attestation:"none"
+  };
+  const cred=await navigator.credentials.create({publicKey});
+  const store=JSON.parse(localStorage.getItem("ff_passkeys")||"{}");
+  store[username]={id:bufToB64(cred.rawId)};
+  localStorage.setItem("ff_passkeys",JSON.stringify(store));
+  return true;
+}
+
+async function loginWithPasskey(username){
+  const store=JSON.parse(localStorage.getItem("ff_passkeys")||"{}");
+  if(!store[username]) throw new Error("Sem passkey cadastrada.");
+  const publicKey={
+    challenge: randomChallenge(),
+    allowCredentials:[{type:"public-key",id:b64ToBuf(store[username].id)}],
+    userVerification:"required",
+    timeout:60000
+  };
+  await navigator.credentials.get({publicKey});
+  return true;
+}

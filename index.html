@@ -1,0 +1,255 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Família Finance PRO</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#7b2ff7">
+  <link rel="icon" href="icon.svg">
+  <link rel="stylesheet" href="style.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">FF</div>
+      <div>
+        <div class="brand-title">Família Finance PRO</div>
+        <div class="brand-sub">controle familiar • dívidas • recorrentes • gráficos</div>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <button class="btn ghost" id="btnInstall" style="display:none;">Instalar</button>
+      <button class="btn ghost" id="btnHelp">Ajuda</button>
+      <button class="btn ghost" id="btnExport" style="display:none;">Backup</button>
+
+      <label class="btn ghost file">
+        Importar
+        <input id="fileImport" type="file" accept="application/json" style="display:none;">
+      </label>
+
+      <button class="btn danger" id="btnLogout" style="display:none;">Sair</button>
+    </div>
+  </div>
+
+  <!-- AUTH -->
+  <div id="auth" class="center">
+    <div class="auth-grid">
+
+      <!-- LOGIN -->
+      <div class="card auth-card">
+        <h1>Entrar</h1>
+
+        <label>Usuário</label>
+        <input id="loginUser" placeholder="ex: pai" autocomplete="username" />
+
+        <label>Senha</label>
+        <input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password" />
+
+        <button class="btn primary" id="btnLogin">Entrar</button>
+
+        <button class="btn ghost" id="btnLoginPasskey" style="margin-top:10px;">
+          Entrar com biometria / PIN (Passkey)
+        </button>
+
+        <button class="btn ghost" id="btnEnablePasskeyFromLogin" style="margin-top:10px;">
+          Ativar biometria / PIN (Passkey)
+        </button>
+
+        <p class="hint">
+          Para ativar biometria, confirme a senha uma vez. Depois entra só com Passkey.
+        </p>
+      </div>
+
+      <!-- REGISTRO -->
+      <div class="card auth-card">
+        <h1>Criar conta</h1>
+
+        <label>Usuário</label>
+        <input id="regUser" placeholder="ex: pai" autocomplete="username" />
+
+        <label>Senha</label>
+        <input id="regPass" type="password" placeholder="crie uma senha" autocomplete="new-password" />
+
+        <div class="grid2">
+          <div>
+            <label>Família (pessoas)</label>
+            <input id="regFamily" type="number" min="1" value="4" />
+          </div>
+          <div>
+            <label>Salário mensal (R$)</label>
+            <input id="regSalary" type="number" min="0" value="0" />
+          </div>
+        </div>
+
+        <button class="btn primary" id="btnRegister">Criar conta</button>
+
+        <p class="hint">
+          Seus dados ficam salvos só neste aparelho. Use Backup para transferir.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="container" style="display:none;">
+
+    <div class="row">
+      <div class="card">
+        <div class="row-between">
+          <div>
+            <h2 id="welcome">Olá</h2>
+            <div class="muted" id="userMeta"></div>
+          </div>
+
+          <div class="monthBox">
+            <label>Mês</label>
+            <select id="monthSelect"></select>
+          </div>
+        </div>
+
+        <div class="grid4">
+          <div class="mini">
+            <div class="mini-title">Renda (mês)</div>
+            <div class="mini-value" id="sumIncome">R$ 0,00</div>
+          </div>
+          <div class="mini">
+            <div class="mini-title">Gastos (mês)</div>
+            <div class="mini-value" id="sumExpense">R$ 0,00</div>
+          </div>
+          <div class="mini">
+            <div class="mini-title">Dívidas (mês)</div>
+            <div class="mini-value" id="sumDebt">R$ 0,00</div>
+          </div>
+          <div class="mini">
+            <div class="mini-title">Saldo</div>
+            <div class="mini-value" id="sumBalance">R$ 0,00</div>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="pill" id="perPerson">Por pessoa: R$ 0,00</div>
+          <div class="pill" id="savingTarget">Meta de reserva: R$ 0,00</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Adicionar movimento</h3>
+
+        <div class="grid2">
+          <div>
+            <label>Tipo</label>
+            <select id="txType">
+              <option value="Receita">Receita</option>
+              <option value="Despesa">Despesa</option>
+              <option value="Divida">Dívida parcelada</option>
+            </select>
+          </div>
+          <div>
+            <label>Categoria</label>
+            <select id="txCat"></select>
+          </div>
+        </div>
+
+        <label>Descrição</label>
+        <input id="txDesc" placeholder="ex: Mercado / Luz / Uber / Freelance" />
+
+        <div class="grid2">
+          <div>
+            <label>Valor (R$)</label>
+            <input id="txAmount" type="number" min="0" placeholder="0" />
+          </div>
+          <div id="installBox" style="display:none;">
+            <label>Parcelas</label>
+            <input id="txInstall" type="number" min="1" placeholder="ex: 12" />
+          </div>
+        </div>
+
+        <button class="btn primary" id="btnAdd">Adicionar</button>
+
+        <div class="muted small">
+          Dívida: calcula “quanto pagar por mês” e lança a parcela automaticamente no mês.
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card">
+        <h3>Gráfico de gastos por categoria</h3>
+        <canvas id="chartCat"></canvas>
+      </div>
+
+      <div class="card">
+        <h3>Fluxo do mês (Renda x Gastos)</h3>
+        <canvas id="chartFlow"></canvas>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card">
+        <h3>Lançamentos do mês</h3>
+        <div class="tableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Categoria</th>
+                <th>Descrição</th>
+                <th>Valor</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="txTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Dívidas ativas</h3>
+        <div id="debtsList" class="list"></div>
+
+        <hr class="sep">
+
+        <h3>Recorrentes</h3>
+        <div id="recList" class="list"></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card">
+        <h3>Admin</h3>
+        <button class="btn danger" id="btnClear">Apagar todos os dados</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL AJUDA -->
+  <div id="helpModal" class="modalBack" style="display:none;">
+    <div class="modal">
+      <h2>Ajuda rápida</h2>
+      <div class="muted">
+        <div><b>1)</b> Crie conta, faça login.</div>
+        <div><b>2)</b> Adicione renda e gastos.</div>
+        <div><b>3)</b> Veja os gráficos e o saldo.</div>
+        <div><b>4)</b> Ative biometria na tela de login (Passkey).</div>
+      </div>
+      <div class="btnRow">
+        <button class="btn primary" id="helpClose">Entendi</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="storage.js"></script>
+  <script src="webauthn.js"></script>
+  <script src="auth.js"></script>
+  <script src="finance.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
